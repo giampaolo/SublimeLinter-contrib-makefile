@@ -34,6 +34,38 @@ def region_position(view, region):
     return (x, y, z)
 
 
+class Parser:
+    def __init__(self):
+        self.view = sublime.active_window().active_view()
+        self.matches = []
+
+    def run(self):
+        self.find_undefined_names()
+        return self.matches
+
+    def add(self, pos, msg, type="error"):
+        lineno, col, end_col = pos
+        lm = LintMatch(
+            filename=self.view.file_name(),
+            line=lineno,
+            col=col,
+            end_col=end_col,
+            message=msg,
+            error_type=type
+        )
+        self.matches.append(lm)
+
+    def find_undefined_names(self):
+        # find all undefined names (e.g. undefined `$(FOO)`)
+        view = self.view
+        gvars = global_vars(view)
+        for region in referenced_vars(view):
+            name = view.substr(region)
+            if name not in gvars and name not in SPECIAL_VARS:
+                pos = region_position(view, region)
+                self.add(pos, "undefined name `%s`" % name)
+
+
 class Makefile(Linter):
     cmd = None
     regex = "stub"
@@ -43,27 +75,4 @@ class Makefile(Linter):
         return "stub"  # just to trigger find_errors()
 
     def find_errors(self, _output):
-        def add(pos, msg, type="error"):
-            lineno, col, end_col = pos
-            lm = LintMatch(
-                filename=view.file_name(),
-                line=lineno,
-                col=col,
-                end_col=end_col,
-                message=msg,
-                error_type=type
-            )
-            matches.append(lm)
-
-        view = sublime.active_window().active_view()
-        matches = []
-
-        # find all undefined names (e.g. undefined `$(FOO)`)
-        gvars = global_vars(view)
-        for region in referenced_vars(view):
-            name = view.substr(region)
-            if name not in gvars and name not in SPECIAL_VARS:
-                pos = region_position(view, region)
-                add(pos, "undefined name `%s`" % name)
-
-        return matches
+        return Parser().run()
