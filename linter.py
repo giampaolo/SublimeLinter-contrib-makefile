@@ -59,8 +59,10 @@ class Parser:
         self.matches = []
 
     def run(self):
-        self.find_undefined_names()
-        self.find_undefined_fun_calls()
+        if self.view.match_selector(0, "source.makefile"):
+            self.find_undefined_names()
+            self.find_undefined_fun_calls()
+            self.find_spaces()
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -76,10 +78,10 @@ class Parser:
         self.matches.append(lm)
 
     def find_undefined_names(self):
-        # Find all undefined names, e.g. FOO does not exist:
+        # All undefined names, e.g:
         #
         # some-target:
-        #     echo $(FOO)
+        #     echo $(FOO)           # <- `FOO` does not exist
         view = self.view
         gvars = global_vars(view)
         for region in referenced_vars(view):
@@ -89,10 +91,10 @@ class Parser:
                 self.add(pos, "undefined name `%s`" % name)
 
     def find_undefined_fun_calls(self):
-        # Find all undefined names, e.g. unknown-target does not exist):
+        # All undefined function calls, e.g.:
         #
-        # some-target:
-        #     ${MAKE} unknown-target
+        # foo:
+        #     ${MAKE} bar           # <- `bar` does not exist
         fnames = function_names(self.view)
         for idx, line in enumerate(readlines(self.view)):
             m = re.match(REGEX_FUN_CALL, line)
@@ -102,6 +104,14 @@ class Parser:
                     pos = idx, 1, len(line)
                     self.add(pos, "undefined target `%s`" % fun_name)
 
+    def find_spaces(self):
+        # Targets body which are indented with spaces instead of tabs.
+        # This is considered a syntax error and make will crash.
+        for idx, line in enumerate(readlines(self.view)):
+            if line.startswith(" "):
+                leading_spaces = len(line) - len(line.lstrip())
+                pos = idx, 0, leading_spaces
+                self.add(pos, "line should start with tab, not space")
 
 
 
