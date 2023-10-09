@@ -1,3 +1,4 @@
+import os
 import re
 
 import sublime
@@ -33,7 +34,15 @@ def global_vars(view):
 def function_names(view):
     # the functions / targets
     regions = view.find_by_selector("entity.name.function")
-    return set([view.substr(x) for x in regions])
+    return set([view.substr(x) for x in regions if view.substr(x) != ".PHONY"])
+
+
+def phony_names(view):
+    text = view.substr(sublime.Region(0, view.size()))
+    names = set()
+    for bits in re.findall(r'\.PHONY:\s*([^\n]+)', text):
+        names.update(bits.split())
+    return names
 
 
 def referenced_vars(view):
@@ -63,6 +72,7 @@ class Parser:
             self.find_undefined_names()
             self.find_undefined_fun_calls()
             self.find_spaces()
+            self.find_missing_phony()
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -113,6 +123,21 @@ class Parser:
                 pos = idx, 0, leading_spaces
                 self.add(pos, "line should start with tab, not space")
 
+    def find_missing_phony(self):
+        # E.g., something like this + there's a directoty 'tests'
+        # in the root, so it requires `.PHONY: tests` on top.
+        #
+        # tests:  ## Run tests
+        #     pytest .
+        view = self.view
+        fnames = set(os.listdir(os.path.dirname(view.file_name())))
+        phonys = phony_names(view)
+        for region in view.find_by_selector("entity.name.function"):
+            tname = view.substr(region)
+            if tname in fnames:
+                if tname not in phonys:
+                    pos = region_position(view, region)
+                    self.add(pos, "missing .PHONY declaration")
 
 
 class Makefile(Linter):
