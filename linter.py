@@ -11,6 +11,15 @@ from SublimeLinter.lint.linter import LintMatch
 SPECIAL_VARS = {
     "MAKE",
     "MAKEFILE_LIST",
+    ".DEFAULT_GOAL",
+    "MAKE_RESTARTS",
+    "MAKE_TERMOUT",
+    "MAKE_TERMERR",
+    ".RECIPEPREFIX",
+    ".VARIABLES",
+    ".FEATURES",
+    ".INCLUDE_DIRS",
+    ".EXTRA_PREREQS",
 }
 
 REGEX_FUN_CALL = re.compile(
@@ -23,6 +32,8 @@ REGEX_FUN_CALL = re.compile(
     """,
     re.VERBOSE,
 )
+
+REGEX_PHONY_NAMES = r'\.PHONY:\s*([^\n]+)'
 
 
 def global_vars(view):
@@ -40,7 +51,7 @@ def function_names(view):
 def phony_names(view):
     text = view.substr(sublime.Region(0, view.size()))
     names = set()
-    for bits in re.findall(r'\.PHONY:\s*([^\n]+)', text):
+    for bits in re.findall(REGEX_PHONY_NAMES, text):
         names.update(bits.split())
     return names
 
@@ -59,7 +70,6 @@ def region_position(view, region):
 def readlines(view):
     region = sublime.Region(0, view.size())
     return [view.substr(x) for x in view.lines(region)]
-
 
 
 class Parser:
