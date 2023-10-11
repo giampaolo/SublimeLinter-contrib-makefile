@@ -3,8 +3,17 @@ import re
 
 import sublime
 
-from SublimeLinter.lint import Linter
-from SublimeLinter.lint.linter import LintMatch
+GITHUB_ACTIONS = 'GITHUB_ACTIONS' in os.environ or 'CIBUILDWHEEL' in os.environ
+
+if not GITHUB_ACTIONS:
+    from SublimeLinter.lint import Linter
+    from SublimeLinter.lint.linter import LintMatch
+else:
+    class LintMatch(dict):
+        pass
+
+    class Linter:
+        pass
 
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Variables.html
