@@ -9,10 +9,20 @@ from SublimeLinter.lint.linter import LintMatch
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Variables.html
 SPECIAL_VARS = {
+    ".DEFAULT_GOAL",
+    ".EXTRA_PREREQS",
+    ".FEATURES",
+    ".INCLUDE_DIRS",
+    ".RECIPEPREFIX",
+    ".VARIABLES",
     "MAKE",
+    "MAKE_RESTARTS",
+    "MAKE_TERMERR",
+    "MAKE_TERMOUT",
     "MAKEFILE_LIST",
 }
 
+# e.g. `${MAKE} flake8` or `$(MAKE) flake8`
 REGEX_FUN_CALL = re.compile(
     r"""
     ^\t\$[{|\(]\s*  # open parenthesis
@@ -61,7 +71,6 @@ def readlines(view):
     return [view.substr(x) for x in view.lines(region)]
 
 
-
 class Parser:
     def __init__(self):
         self.view = sublime.active_window().active_view()
@@ -101,7 +110,7 @@ class Parser:
                 self.add(pos, "undefined name `%s`" % name)
 
     def find_undefined_fun_calls(self):
-        # All undefined function calls, e.g.:
+        # All undefined function (target) calls, e.g.:
         #
         # foo:
         #     ${MAKE} bar           # <- `bar` does not exist
