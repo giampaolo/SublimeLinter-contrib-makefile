@@ -7,8 +7,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        st-version: [3, 4]
-        os: ["ubuntu-latest"]  #, "macOS-latest", "windows-latest"]
+        # st-version: [3, 4]
+        st-version: [4]
+        # os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
+        os: ["ubuntu-latest"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -16,6 +18,3 @@ jobs:
         with:
           sublime-text-version: ${{ matrix.st-version }}
       - uses: SublimeText/UnitTesting/actions/run-tests@v1
-        with:
-          coverage: true
-      - uses: codecov/codecov-action@v3
