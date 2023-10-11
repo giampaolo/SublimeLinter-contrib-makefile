@@ -30,7 +30,7 @@ SPECIAL_VARS = {
 }
 
 # e.g. `${MAKE} flake8` or `$(MAKE) flake8`
-REGEX_FUN_CALL = re.compile(
+REGEX_TARGET_CALL = re.compile(
     r"""
     ^\t\$[{|\(]\s*  # open parenthesis
     MAKE
@@ -48,8 +48,8 @@ def global_vars(view):
     return set([view.substr(x) for x in regions])
 
 
-def function_names(view):
-    # the functions / targets
+def target_names(view):
+    # the function / target names
     regions = view.find_by_selector("entity.name.function")
     return set([view.substr(x) for x in regions if view.substr(x) != ".PHONY"])
 
@@ -85,11 +85,11 @@ class Parser:
 
     def run(self):
         if self.view.match_selector(0, "source.makefile"):
-            self.find_undefined_names()
-            self.find_undefined_fun_calls()
+            self.find_undefined_vars()
+            self.find_undefined_target_calls()
             self.find_spaces()
             self.find_missing_phony()
-            self.find_fun_target_names()
+            self.find_duplicate_targets()
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -104,7 +104,7 @@ class Parser:
         )
         self.matches.append(lm)
 
-    def find_undefined_names(self):
+    def find_undefined_vars(self):
         """All undefined names, e.g. `FOO` does not exist:
 
         test:
@@ -118,21 +118,21 @@ class Parser:
                 pos = region_position(view, region)
                 self.add(pos, "undefined name `%s`" % name)
 
-    def find_undefined_fun_calls(self):
-        """All undefined function (target) calls, e.g., `bar` does not
+    def find_undefined_target_calls(self):
+        """All undefined target (function) calls, e.g., `bar` does not
         exist:
 
         test:
             ${MAKE} bar
         """
-        fnames = function_names(self.view)
+        fnames = target_names(self.view)
         for idx, line in enumerate(readlines(self.view)):
-            m = re.match(REGEX_FUN_CALL, line)
+            m = re.match(REGEX_TARGET_CALL, line)
             if m:
-                fun_name = m.group(1)
-                if fun_name not in fnames:
+                target_name = m.group(1)
+                if target_name not in fnames:
                     pos = idx, 1, len(line)
-                    self.add(pos, "undefined target `%s`" % fun_name)
+                    self.add(pos, "undefined target `%s`" % target_name)
 
     def find_spaces(self):
         """Targets body which are indented with spaces instead of tabs.
@@ -160,7 +160,7 @@ class Parser:
                     pos = region_position(view, region)
                     self.add(pos, "missing .PHONY declaration")
 
-    def find_fun_target_names(self):
+    def find_duplicate_targets(self):
         """Duplicated target names, e.g.
 
         tests:

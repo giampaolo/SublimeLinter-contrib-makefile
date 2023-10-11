@@ -17,9 +17,9 @@ Correct:
 
 ```makefile
 FOO = 1
+
 test:
     echo $(FOO)
-
 ```
 
 Incorrect (prints `undefined name "FOO"`):

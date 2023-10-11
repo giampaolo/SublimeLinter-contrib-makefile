@@ -12,7 +12,7 @@ TEST_FILE = "/tmp/SublimeLinter-makefile-test/Makefile"
 sys.path.append(ROOT)
 
 from linter import Parser  # noqa
-from linter import function_names  # noqa
+from linter import target_names  # noqa
 from linter import global_vars  # noqa
 from linter import phony_names  # noqa
 from linter import referenced_vars  # noqa
@@ -65,7 +65,7 @@ class TestCase(DeferrableTestCase):
 
 class TestUtils(TestCase):
 
-    def test_function_names(self):
+    def test_target_names(self):
         view = yield from self.write_makefile("""
             hello1:
             \techo 1
@@ -83,7 +83,7 @@ class TestUtils(TestCase):
             \techo 1
             """)
         self.assertEqual(
-            function_names(view),
+            target_names(view),
             {"hello1", "hello_1", "_hello1", "_hello-1", "1hello"}
         )
 
