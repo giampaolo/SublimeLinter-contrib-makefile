@@ -3,9 +3,7 @@ import re
 
 import sublime
 
-GITHUB_ACTIONS = 'GITHUB_ACTIONS' in os.environ or 'CIBUILDWHEEL' in os.environ
-
-if not GITHUB_ACTIONS:
+if 'GITHUB_ACTIONS' not in os.environ:
     from SublimeLinter.lint import Linter
     from SublimeLinter.lint.linter import LintMatch
 else:

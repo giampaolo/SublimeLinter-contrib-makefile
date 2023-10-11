@@ -1,30 +1,66 @@
-This is a template. For "how to make a linter", please check [the HOWTO](HOWTO.md).
+[![test](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml/badge.svg)](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml)
 
------------------------------------------------------------------
+About
+=====
 
-SublimeLinter-contrib-__linter__
-================================
+A plugin for [SublimeLinter](https://github.com/SublimeLinter/SublimeLinter),
+for linting **Makefiles**. What it checks:
 
-[![Build Status](https://travis-ci.org/SublimeLinter/SublimeLinter-contrib-__linter__.svg?branch=master)](https://travis-ci.org/SublimeLinter/SublimeLinter-contrib-__linter__)
+Checkers
+========
 
-This linter plugin for [SublimeLinter](https://github.com/SublimeLinter/SublimeLinter) provides an interface to [__linter__](__linter_homepage__). It will be used with files that have the “__syntax__” syntax.
+This plugin is able to detect the following error conditions:
 
-## Installation
-SublimeLinter must be installed in order to use this plugin. 
+#### Undefined global variable names
 
-Please use [Package Control](https://packagecontrol.io) to install the linter plugin.
+Correct:
 
-Before installing this plugin, you must ensure that `__linter__` is installed on your system.
+```makefile
+FOO = 1
+test:
+    echo $(FOO)
 
-In order for `__linter__` to be executed by SublimeLinter, you must ensure that its path is available to SublimeLinter. The docs cover [troubleshooting PATH configuration](http://sublimelinter.readthedocs.io/en/latest/troubleshooting.html#finding-a-linter-executable).
+```
 
-## Settings
-- SublimeLinter settings: http://sublimelinter.readthedocs.org/en/latest/settings.html
-- Linter settings: http://sublimelinter.readthedocs.org/en/latest/linter_settings.html
+Incorrect (prints `undefined name "FOO"`):
 
-Additional SublimeLinter-__linter__ settings:
+```makefile
+test:
+    echo $(FOO)
+```
 
-|Setting|Description    |
-|:------|:--------------|
-|foo    |Something.     |
-|bar    |Something else.|
+#### Undefined target names
+
+Correct:
+
+```makefile
+clean:
+    rm -rf build/*
+
+test:
+    ${MAKE} clean
+    pytest .
+
+```
+
+Incorrect (prints `undefined target "clean"`):
+
+```makefile
+test:
+    ${MAKE} clean
+    pytest .
+```
+
+#### Missing `.PHONY` directive
+
+This will print `missing .PHONY declaration` if there's a file or directory
+named "test" in the same directory as the Makefile:
+
+```makefile
+test:
+    pytest .
+```
+
+#### Use of spaces instead of tabs
+
+Any line starting with a space instead of tab will produce a warning.
