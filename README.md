@@ -4,7 +4,7 @@ About
 =====
 
 A plugin for [SublimeLinter](https://github.com/SublimeLinter/SublimeLinter),
-for linting **Makefiles**. What it checks:
+which provides linting for Makefiles.
 
 Checkers
 ========
@@ -51,6 +51,18 @@ test:
     pytest .
 ```
 
+#### Use of spaces instead of tabs
+
+Any line starting with a space instead of tab is considered an error, e.g.
+
+```makefile
+test1:
+    pytest .  # use tab
+
+test2:
+  pytest .  # use spaces
+````
+
 #### Missing `.PHONY` directive
 
 This will print `missing .PHONY declaration` if there's a file or directory
@@ -61,6 +73,14 @@ test:
     pytest .
 ```
 
-#### Use of spaces instead of tabs
+#### Duplicated targets
 
-Any line starting with a space instead of tab will produce a warning.
+When there's 2 targets with the same name, e.g.:
+
+```makefile
+test:
+    pytest .
+
+test:
+    pytest .
+```

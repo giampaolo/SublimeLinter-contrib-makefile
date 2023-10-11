@@ -89,6 +89,7 @@ class Parser:
             self.find_undefined_fun_calls()
             self.find_spaces()
             self.find_missing_phony()
+            self.find_fun_target_names()
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -104,10 +105,11 @@ class Parser:
         self.matches.append(lm)
 
     def find_undefined_names(self):
-        # All undefined names, e.g:
-        #
-        # some-target:
-        #     echo $(FOO)           # <- `FOO` does not exist
+        """All undefined names, e.g. `FOO` does not exist:
+
+        test:
+            echo $(FOO)
+        """
         view = self.view
         gvars = global_vars(view)
         for region in referenced_vars(view):
@@ -117,10 +119,12 @@ class Parser:
                 self.add(pos, "undefined name `%s`" % name)
 
     def find_undefined_fun_calls(self):
-        # All undefined function (target) calls, e.g.:
-        #
-        # foo:
-        #     ${MAKE} bar           # <- `bar` does not exist
+        """All undefined function (target) calls, e.g., `bar` does not
+        exist:
+
+        test:
+            ${MAKE} bar
+        """
         fnames = function_names(self.view)
         for idx, line in enumerate(readlines(self.view)):
             m = re.match(REGEX_FUN_CALL, line)
@@ -131,8 +135,8 @@ class Parser:
                     self.add(pos, "undefined target `%s`" % fun_name)
 
     def find_spaces(self):
-        # Targets body which are indented with spaces instead of tabs.
-        # This is considered a syntax error and make will crash.
+        """Targets body which are indented with spaces instead of tabs.
+        This is considered a syntax error and make will crash."""
         for idx, line in enumerate(readlines(self.view)):
             if line.startswith(" "):
                 leading_spaces = len(line) - len(line.lstrip())
@@ -140,11 +144,12 @@ class Parser:
                 self.add(pos, "line should start with tab, not space")
 
     def find_missing_phony(self):
-        # E.g., something like this + there's a directoty 'tests'
-        # in the root, so it requires `.PHONY: tests` on top.
-        #
-        # tests:  ## Run tests
-        #     pytest .
+        """E.g., something like this + there's a directoty 'tests'
+        in the root, so it requires `.PHONY: tests` on top.
+
+        tests:
+            pytest
+        """
         view = self.view
         fnames = set(os.listdir(os.path.dirname(view.file_name())))
         phonys = phony_names(view)
@@ -154,6 +159,24 @@ class Parser:
                 if tname not in phonys:
                     pos = region_position(view, region)
                     self.add(pos, "missing .PHONY declaration")
+
+    def find_fun_target_names(self):
+        """Duplicated target names, e.g.
+
+        tests:
+            pytest
+
+        tests:
+            pytest
+        """
+        view = self.view
+        collected = set()
+        for region in view.find_by_selector("entity.name.function"):
+            name = view.substr(region)
+            if name in collected:
+                pos = region_position(view, region)
+                self.add(pos, "a target with the same name already exists")
+            collected.add(name)
 
 
 class Makefile(Linter):
