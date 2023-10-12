@@ -1,6 +1,7 @@
-SublimeLinter-contrib-__linter__
--------------------------------
-This linter plugin for SublimeLinter provides an interface to __linter__.
+SublimeLinter-makefile
+----------------------
+
+This plugin for SublimeLinter provides linting for Makefiles.
 
 For more information, please see:
-https://github.com/__user__/SublimeLinter-contrib-__linter__
+https://github.com/giampaolo/SublimeLinter-makefile

@@ -3,13 +3,30 @@ import re
 
 import sublime
 
-from SublimeLinter.lint import Linter
-from SublimeLinter.lint.linter import LintMatch
+if 'GITHUB_ACTIONS' not in os.environ:
+    from SublimeLinter.lint import Linter
+    from SublimeLinter.lint.linter import LintMatch
+else:
+
+    class LintMatch(dict):
+        pass
+
+    class Linter:
+        pass
 
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Variables.html
 SPECIAL_VARS = {
+    ".DEFAULT_GOAL",
+    ".EXTRA_PREREQS",
+    ".FEATURES",
+    ".INCLUDE_DIRS",
+    ".RECIPEPREFIX",
+    ".VARIABLES",
     "MAKE",
+    "MAKE_RESTARTS",
+    "MAKE_TERMERR",
+    "MAKE_TERMOUT",
     "MAKEFILE_LIST",
     ".DEFAULT_GOAL",
     "MAKE_RESTARTS",
@@ -22,7 +39,8 @@ SPECIAL_VARS = {
     ".EXTRA_PREREQS",
 }
 
-REGEX_FUN_CALL = re.compile(
+# e.g. `${MAKE} flake8` or `$(MAKE) flake8`
+REGEX_TARGET_CALL = re.compile(
     r"""
     ^\t\$[{|\(]\s*  # open parenthesis
     MAKE
@@ -42,8 +60,8 @@ def global_vars(view):
     return set([view.substr(x) for x in regions])
 
 
-def function_names(view):
-    # the functions / targets
+def target_names(view):
+    # the function / target names
     regions = view.find_by_selector("entity.name.function")
     return set([view.substr(x) for x in regions if view.substr(x) != ".PHONY"])
 
@@ -79,10 +97,11 @@ class Parser:
 
     def run(self):
         if self.view.match_selector(0, "source.makefile"):
-            self.find_undefined_names()
-            self.find_undefined_fun_calls()
+            self.find_undefined_vars()
+            self.find_undefined_target_calls()
             self.find_spaces()
             self.find_missing_phony()
+            self.find_duplicate_targets()
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -93,15 +112,16 @@ class Parser:
             col=col,
             end_col=end_col,
             message=msg,
-            error_type=type
+            error_type=type,
         )
         self.matches.append(lm)
 
-    def find_undefined_names(self):
-        # All undefined names, e.g:
-        #
-        # some-target:
-        #     echo $(FOO)           # <- `FOO` does not exist
+    def find_undefined_vars(self):
+        """All undefined names, e.g. `FOO` does not exist:
+
+        test:
+            echo $(FOO)
+        """
         view = self.view
         gvars = global_vars(view)
         for region in referenced_vars(view):
@@ -110,23 +130,25 @@ class Parser:
                 pos = region_position(view, region)
                 self.add(pos, "undefined name `%s`" % name)
 
-    def find_undefined_fun_calls(self):
-        # All undefined function calls, e.g.:
-        #
-        # foo:
-        #     ${MAKE} bar           # <- `bar` does not exist
-        fnames = function_names(self.view)
+    def find_undefined_target_calls(self):
+        """All undefined target (function) calls, e.g., `bar` does not
+        exist:
+
+        test:
+            ${MAKE} bar
+        """
+        fnames = target_names(self.view)
         for idx, line in enumerate(readlines(self.view)):
-            m = re.match(REGEX_FUN_CALL, line)
+            m = re.match(REGEX_TARGET_CALL, line)
             if m:
-                fun_name = m.group(1)
-                if fun_name not in fnames:
+                target_name = m.group(1)
+                if target_name not in fnames:
                     pos = idx, 1, len(line)
-                    self.add(pos, "undefined target `%s`" % fun_name)
+                    self.add(pos, "undefined target `%s`" % target_name)
 
     def find_spaces(self):
-        # Targets body which are indented with spaces instead of tabs.
-        # This is considered a syntax error and make will crash.
+        """Targets body which are indented with spaces instead of tabs.
+        This is considered a syntax error and make will crash."""
         for idx, line in enumerate(readlines(self.view)):
             if line.startswith(" "):
                 leading_spaces = len(line) - len(line.lstrip())
@@ -134,11 +156,13 @@ class Parser:
                 self.add(pos, "line should start with tab, not space")
 
     def find_missing_phony(self):
-        # E.g., something like this + there's a directoty 'tests'
-        # in the root, so it requires `.PHONY: tests` on top.
-        #
-        # tests:  ## Run tests
-        #     pytest .
+        """E.g., something like this + there's a directory 'tests' in
+        the same dir as the Makefile, so it requires `.PHONY: tests` on
+        top.
+
+        tests:
+            pytest
+        """
         view = self.view
         fnames = set(os.listdir(os.path.dirname(view.file_name())))
         phonys = phony_names(view)
@@ -148,6 +172,24 @@ class Parser:
                 if tname not in phonys:
                     pos = region_position(view, region)
                     self.add(pos, "missing .PHONY declaration")
+
+    def find_duplicate_targets(self):
+        """Duplicated target names, e.g.
+
+        tests:
+            pytest
+
+        tests:
+            pytest
+        """
+        view = self.view
+        collected = set()
+        for region in view.find_by_selector("entity.name.function"):
+            name = view.substr(region)
+            if name in collected:
+                pos = region_position(view, region)
+                self.add(pos, "a target with the same name already exists")
+            collected.add(name)
 
 
 class Makefile(Linter):
