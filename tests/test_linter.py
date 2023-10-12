@@ -136,7 +136,7 @@ class TestParser(TestCase):
             """
         )
 
-        p = Parser()
+        p = Parser(view)
         p.run()
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])
@@ -152,7 +152,7 @@ class TestParser(TestCase):
             """
         )
 
-        p = Parser()
+        p = Parser(view)
         p.run()
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])
@@ -166,7 +166,7 @@ class TestParser(TestCase):
             """
         )
 
-        p = Parser()
+        p = Parser(view)
         p.run()
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])
@@ -181,7 +181,7 @@ class TestParser(TestCase):
             """
         )
 
-        p = Parser()
+        p = Parser(view)
         p.run()
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])
@@ -198,7 +198,7 @@ class TestParser(TestCase):
             """
         )
 
-        p = Parser()
+        p = Parser(view)
         p.run()
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])

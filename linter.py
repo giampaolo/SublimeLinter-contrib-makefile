@@ -14,6 +14,7 @@ else:
     class Linter:
         pass
 
+__version__ = "0.1.0"
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Variables.html
 SPECIAL_VARS = {
@@ -46,7 +47,7 @@ REGEX_TARGET_CALL = re.compile(
     MAKE
     \s*[}|\)]  # close parenthesis
     \s+
-    ([A-Za-z0-9_\-]+)
+    ([_A-Za-z0-9][A-Za-z0-9_-]+)
     """,
     re.VERBOSE,
 )
@@ -91,8 +92,8 @@ def readlines(view):
 
 
 class Parser:
-    def __init__(self):
-        self.view = sublime.active_window().active_view()
+    def __init__(self, view):
+        self.view = view
         self.matches = []
 
     def run(self):
@@ -201,4 +202,4 @@ class Makefile(Linter):
         return "stub"  # just to trigger find_errors()
 
     def find_errors(self, _output):
-        return Parser().run()
+        return Parser(self.view).run()
