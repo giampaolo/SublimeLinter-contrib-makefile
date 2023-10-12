@@ -3,7 +3,7 @@
 About
 =====
 
-A plugin for [SublimeLinter](https://github.com/SublimeLinter/SublimeLinter),
+A plugin for [SublimeLinter](https://github.com/SublimeLinter/SublimeLinter)
 which provides linting for Makefiles.
 
 Checkers
@@ -22,7 +22,7 @@ test:
     echo $(FOO)
 ```
 
-Incorrect (prints `undefined name "FOO"`):
+Incorrect:
 
 ```makefile
 test:
@@ -43,11 +43,23 @@ test:
 
 ```
 
-Incorrect (prints `undefined target "clean"`):
+Incorrect:
 
 ```makefile
 test:
     ${MAKE} clean
+    pytest .
+```
+
+#### Duplicated targets
+
+When there's 2 targets with the same name, e.g.:
+
+```makefile
+test:
+    pytest .
+
+test:
     pytest .
 ```
 
@@ -69,18 +81,6 @@ This will print `missing .PHONY declaration` if there's a file or directory
 named "test" in the same directory as the Makefile:
 
 ```makefile
-test:
-    pytest .
-```
-
-#### Duplicated targets
-
-When there's 2 targets with the same name, e.g.:
-
-```makefile
-test:
-    pytest .
-
 test:
     pytest .
 ```
