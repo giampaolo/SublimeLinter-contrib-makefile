@@ -7,6 +7,7 @@ if 'GITHUB_ACTIONS' not in os.environ:
     from SublimeLinter.lint import Linter
     from SublimeLinter.lint.linter import LintMatch
 else:
+
     class LintMatch(dict):
         pass
 
@@ -100,7 +101,7 @@ class Parser:
             col=col,
             end_col=end_col,
             message=msg,
-            error_type=type
+            error_type=type,
         )
         self.matches.append(lm)
 

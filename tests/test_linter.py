@@ -18,7 +18,6 @@ from linter import phony_names  # noqa
 from linter import referenced_vars  # noqa
 
 
-
 class TestCase(DeferrableTestCase):
     def setUp(self):
         super().setUp()
@@ -64,9 +63,9 @@ class TestCase(DeferrableTestCase):
 
 
 class TestUtils(TestCase):
-
     def test_target_names(self):
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             hello1:
             \techo 1
 
@@ -81,24 +80,25 @@ class TestUtils(TestCase):
 
             1hello:  # valid
             \techo 1
-            """)
+            """
+        )
         self.assertEqual(
             target_names(view),
-            {"hello1", "hello_1", "_hello1", "_hello-1", "1hello"}
+            {"hello1", "hello_1", "_hello1", "_hello-1", "1hello"},
         )
 
     def test_global_vars(self):
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             FOO = 1
             BAR = 1
-            """)
-        self.assertEqual(
-            global_vars(view),
-            {"FOO", "BAR"}
+            """
         )
+        self.assertEqual(global_vars(view), {"FOO", "BAR"})
 
     def test_phony_names(self):
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             .PHONY: hello1
             hello1:
             \techo 1
@@ -109,31 +109,32 @@ class TestUtils(TestCase):
             .PHONY: _hello1
             _hello1:
             \techo 1
-            """)
-        self.assertEqual(
-            phony_names(view),
-            {"hello1", "_hello1"}
+            """
         )
+        self.assertEqual(phony_names(view), {"hello1", "_hello1"})
 
     def test_referenced_vars(self):
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             .PHONY: hello1
             hello1:
             \techo $(FOO)
             \techo ${BAR}
-            """)
+            """
+        )
         self.assertEqual(
-            {view.substr(x) for x in referenced_vars(view)},
-            {"FOO", "BAR"}
+            {view.substr(x) for x in referenced_vars(view)}, {"FOO", "BAR"}
         )
 
 
 class TestParser(TestCase):
     def test_undefined_name(self):
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             hello:
             \techo $(FOO)
-            """)
+            """
+        )
 
         p = Parser()
         p.run()
@@ -144,10 +145,12 @@ class TestParser(TestCase):
         self.assertEqual(d["col"], 8)
 
     def test_undefined_fun_call(self):
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             fix-all:
             \t${MAKE} fix-black
-            """)
+            """
+        )
 
         p = Parser()
         p.run()
@@ -156,10 +159,12 @@ class TestParser(TestCase):
         self.assertEqual(d["message"], "undefined target `fix-black`")
 
     def test_space(self):
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             fix-all:
                 echo 1
-            """)
+            """
+        )
 
         p = Parser()
         p.run()
@@ -169,10 +174,12 @@ class TestParser(TestCase):
 
     def test_phony(self):
         os.mkdir(os.path.join(os.path.dirname(TEST_FILE), "dirname"))
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             dirname:
             \techo 1
-            """)
+            """
+        )
 
         p = Parser()
         p.run()
@@ -182,13 +189,15 @@ class TestParser(TestCase):
 
     def test_duplicated_target(self):
         os.mkdir(os.path.join(os.path.dirname(TEST_FILE), "dirname"))
-        view = yield from self.write_makefile("""
+        view = yield from self.write_makefile(
+            """
             test:
             \techo 1
 
             test:
             \techo 1
-            """)
+            """
+        )
 
         p = Parser()
         p.run()
