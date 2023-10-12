@@ -145,8 +145,9 @@ class Parser:
                 self.add(pos, "line should start with tab, not space")
 
     def find_missing_phony(self):
-        """E.g., something like this + there's a directoty 'tests'
-        in the root, so it requires `.PHONY: tests` on top.
+        """E.g., something like this + there's a directory 'tests' in
+        the same dir as the Makefile, so it requires `.PHONY: tests` on
+        top.
 
         tests:
             pytest

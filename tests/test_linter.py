@@ -188,7 +188,6 @@ class TestParser(TestCase):
         self.assertEqual(d["message"], "missing .PHONY declaration")
 
     def test_duplicated_target(self):
-        os.mkdir(os.path.join(os.path.dirname(TEST_FILE), "dirname"))
         view = yield from self.write_makefile(
             """
             test:

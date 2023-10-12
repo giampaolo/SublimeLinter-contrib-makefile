@@ -1,13 +1,13 @@
-[![test](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml/badge.svg)](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml)
+[![tests](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml/badge.svg)](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml)
 
 About
-=====
+-----
 
 A plugin for [SublimeLinter](https://github.com/SublimeLinter/SublimeLinter)
 which provides linting for Makefiles.
 
 Checkers
-========
+--------
 
 This plugin is able to detect the following error conditions:
 

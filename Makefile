@@ -1,14 +1,14 @@
 PYTHON = python3
 ARGS =
 
-test:
+test:  ## Run tests. Requires UnitTesting module.
 	subl tests/test_linter.py
 	subl --command unit_testing_current_file
 
 black:  ## Run black linter.
 	@git ls-files '*.py' | xargs $(PYTHON) -m black --config=pyproject.toml --check --safe
 
-fix-black:
+fix-black:  ## Fix black warnings.
 	git ls-files '*.py' | xargs $(PYTHON) -m black --config=pyproject.toml
 
 help: ## Display callable targets.
