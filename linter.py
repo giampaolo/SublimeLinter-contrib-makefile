@@ -29,15 +29,6 @@ SPECIAL_VARS = {
     "MAKE_TERMERR",
     "MAKE_TERMOUT",
     "MAKEFILE_LIST",
-    ".DEFAULT_GOAL",
-    "MAKE_RESTARTS",
-    "MAKE_TERMOUT",
-    "MAKE_TERMERR",
-    ".RECIPEPREFIX",
-    ".VARIABLES",
-    ".FEATURES",
-    ".INCLUDE_DIRS",
-    ".EXTRA_PREREQS",
 }
 
 # e.g. `${MAKE} flake8` or `$(MAKE) flake8`
@@ -77,7 +68,7 @@ def phony_names(view):
 
 def referenced_vars(view):
     regions = view.find_by_selector("variable.parameter.makefile")
-    return regions
+    return [x for x in regions if view.substr(x) != "${*}"]
 
 
 def region_position(view, region):
