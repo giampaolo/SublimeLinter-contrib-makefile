@@ -158,6 +158,20 @@ class TestParser(TestCase):
         d = dict(p.matches[0])
         self.assertEqual(d["message"], "undefined target `fix-black`")
 
+    def test_undefined_fun_call_w_make_args(self):
+        view = yield from self.write_makefile(
+            """
+            fix-all:
+            \t${MAKE} -k --keep fix-black
+            """
+        )
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual(len(p.matches), 1)
+        d = dict(p.matches[0])
+        self.assertEqual(d["message"], "undefined target `fix-black`")
+
     def test_space(self):
         view = yield from self.write_makefile(
             """

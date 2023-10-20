@@ -31,13 +31,17 @@ SPECIAL_VARS = {
     "MAKEFILE_LIST",
 }
 
-# e.g. `${MAKE} flake8` or `$(MAKE) flake8`
+# e.g.:
+# `${MAKE} flake8`
+# `$(MAKE) flake8`
+# `$(MAKE) -C flake8`
 REGEX_TARGET_CALL = re.compile(
     r"""
     ^\t\$[{|\(]\s*  # open parenthesis
     MAKE
     \s*[}|\)]  # close parenthesis
     \s+
+    (?:-\w+\s+|--\w+\s+)*  # optional cmd line args like -k or --keep
     ([_A-Za-z0-9][A-Za-z0-9_-]+)
     """,
     re.VERBOSE,
