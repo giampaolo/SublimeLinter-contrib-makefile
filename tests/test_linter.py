@@ -162,7 +162,7 @@ class TestParser(TestCase):
         view = yield from self.write_makefile(
             """
             fix-all:
-            \t${MAKE} -k --keep --keep-foo fix-black
+            \t${MAKE} -k -K --keep --keep-foo --jobs=3 --jobs-x=3 fix-black
             """
         )
 

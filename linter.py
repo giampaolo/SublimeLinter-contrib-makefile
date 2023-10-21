@@ -41,8 +41,12 @@ REGEX_TARGET_CALL = re.compile(
     MAKE
     \s*[}|\)]  # close parenthesis
     \s+
-    (?:-\w+\s+|--[a-z-]+\s+)*  # ignore optional args like -k,--keep, --keep-rf
-    ([_A-Za-z0-9][A-Za-z0-9_-]+)
+    # ignore optional args
+    (?:-[a-zA-Z]\s+  # -c, -C
+      |--[a-z-]+\s+  # --keep, --keep-going
+      |--[a-z-]+=.*?\s+  # --jobs=3
+    )*
+    ([_A-Za-z0-9][A-Za-z0-9_-]+)  # target name
     """,
     re.VERBOSE,
 )
