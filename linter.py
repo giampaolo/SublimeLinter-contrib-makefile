@@ -138,12 +138,13 @@ class Parser:
             ${MAKE} bar
         """
         fnames = target_names(self.view)
-        for idx, line in enumerate(readlines(self.view)):
+        for lineno, line in enumerate(readlines(self.view)):
             m = re.match(REGEX_TARGET_CALL, line)
             if m:
                 target_name = m.group(1)
                 if target_name not in fnames:
-                    pos = idx, 1, len(line)
+                    start, end = m.span(1)
+                    pos = lineno, start, end
                     self.add(pos, "undefined target `%s`" % target_name)
 
     def find_spaces(self):

@@ -1,6 +1,8 @@
 0.1.1
 -----
 
+* when recognizing unknown target names, highlight the specific name instead of
+  the whole line.
 * recognize `make` command line args, e.g. `$(make) -k --keep foo` will be an
   error if 'foo' does not exist.
 
