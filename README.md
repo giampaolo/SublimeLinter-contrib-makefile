@@ -6,6 +6,12 @@ About
 A plugin for [SublimeLinter](https://github.com/SublimeLinter/SublimeLinter)
 which provides linting for Makefiles.
 
+## Installation
+
+Use [Package Control](https://packagecontrol.io/installation): search for a
+package named `SublimeLinter-contrib-makefile` and install it.
+SublimeLinter must also be installed.
+
 Checkers
 --------
 
