@@ -41,7 +41,7 @@ REGEX_TARGET_CALL = re.compile(
     MAKE
     \s*[}|\)]  # close parenthesis
     \s+
-    (?:-\w+\s+|--\w+\s+)*  # optional cmd line args like -k or --keep
+    (?:-\w+\s+|--[a-z-]+\s+)*  # ignore optional args like -k,--keep, --keep-rf
     ([_A-Za-z0-9][A-Za-z0-9_-]+)
     """,
     re.VERBOSE,
