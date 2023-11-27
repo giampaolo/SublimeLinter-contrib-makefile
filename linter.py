@@ -15,7 +15,7 @@ else:
         pass
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Variables.html
 SPECIAL_VARS = {
@@ -188,9 +188,9 @@ class Parser:
         collected = set()
         for region in view.find_by_selector("entity.name.function"):
             name = view.substr(region)
-            if name in collected:
+            if name in collected and name != ".PHONY":
                 pos = region_position(view, region)
-                self.add(pos, "a target with the same name already exists")
+                self.add(pos, "a target named `%s` already exists" % name)
             collected.add(name)
 
     def find_leading_spaces(self, line, lineno):

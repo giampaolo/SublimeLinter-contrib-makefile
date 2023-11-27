@@ -209,7 +209,7 @@ class TestParser(TestCase):
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])
         self.assertEqual(
-            d["message"], "a target with the same name already exists"
+            d["message"], "a target named `test` already exists"
         )
 
     def test_trailing_spaces(self):

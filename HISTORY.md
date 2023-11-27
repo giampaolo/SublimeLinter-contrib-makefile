@@ -1,6 +1,11 @@
 *(issue tracker at:
 https://github.com/giampaolo/SublimeLinter-contrib-makefile/issues/)*
 
+0.1.3 (unreleased)
+------------------
+
+* `.PHONY` was erroneously considered a target name.
+
 0.1.2
 -----
 
