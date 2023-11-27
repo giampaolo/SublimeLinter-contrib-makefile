@@ -15,7 +15,7 @@ else:
         pass
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 
 # https://www.gnu.org/software/make/manual/html_node/Special-Variables.html
 SPECIAL_VARS = {
@@ -69,8 +69,7 @@ def target_names(view):
     return set([view.substr(x) for x in regions if view.substr(x) != ".PHONY"])
 
 
-def phony_names(view):
-    text = view.substr(sublime.Region(0, view.size()))
+def phony_names(text):
     names = set()
     for bits in re.findall(REGEX_PHONY_NAMES, text):
         names.update(bits.split())
@@ -97,9 +96,11 @@ class Parser:
     def __init__(self, view):
         self.view = view
         self.matches = []
+        self.text = None
 
     def run(self):
         if self.view.match_selector(0, "source.makefile"):
+            self.text = self.view.substr(sublime.Region(0, self.view.size()))
             self.find_undefined_vars()
             self.find_undefined_target_calls()
             self.find_spaces()
@@ -169,7 +170,7 @@ class Parser:
         """
         view = self.view
         fnames = set(os.listdir(os.path.dirname(view.file_name())))
-        phonys = phony_names(view)
+        phonys = phony_names(self.text)
         for region in view.find_by_selector("entity.name.function"):
             tname = view.substr(region)
             if tname in fnames:

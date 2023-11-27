@@ -105,7 +105,7 @@ class TestUtils(TestCase):
         self.assertEqual(global_var_names(view), {"PYTHON", "FOO"})
 
     def test_phony_names(self):
-        view = yield from self.write_makefile("""
+        text = """
             .PHONY: hello1
             hello1:
             \techo 1
@@ -116,8 +116,8 @@ class TestUtils(TestCase):
             .PHONY: _hello1
             _hello1:
             \techo 1
-            """)
-        self.assertEqual(phony_names(view), {"hello1", "_hello1"})
+            """
+        self.assertEqual(phony_names(text), {"hello1", "_hello1"})
 
     def test_referenced_vars(self):
         view = yield from self.write_makefile("""
