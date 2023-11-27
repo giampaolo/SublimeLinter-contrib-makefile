@@ -3,7 +3,7 @@ import re
 
 import sublime
 
-if 'GITHUB_ACTIONS' not in os.environ:
+if "GITHUB_ACTIONS" not in os.environ:
     from SublimeLinter.lint import Linter
     from SublimeLinter.lint.linter import LintMatch
 else:
@@ -13,6 +13,7 @@ else:
 
     class Linter:
         pass
+
 
 __version__ = "0.1.0"
 
@@ -51,13 +52,15 @@ REGEX_TARGET_CALL = re.compile(
     re.VERBOSE,
 )
 
-REGEX_PHONY_NAMES = r'\.PHONY:\s*([^\n]+)'
+REGEX_PHONY_NAMES = r"\.PHONY:\s*([^\n]+)"
 
 
 def global_vars(view):
     # the `VARIABLE`s declared in the global namespace
     regions = view.find_by_selector("variable.other.makefile")
-    return set([view.substr(x) for x in regions])
+    # strip() of tabs and/or spaces is necessary in case VAR is
+    # indented inside an ifeq clause or something
+    return set([view.substr(x).strip() for x in regions])
 
 
 def target_names(view):

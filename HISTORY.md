@@ -1,3 +1,19 @@
+*(issue tracker at:
+https://github.com/giampaolo/SublimeLinter-contrib-makefile/issues/)*
+
+0.1.2 (unreleased)
+------------------
+
+* #1: constants were not recognized if start with a tab as in:
+
+```
+ifneq (,$(shell command -v python3.8 2> /dev/null))
+  PYTHON=python3.8
+else
+  PYTHON=python3
+endif
+```
+
 0.1.1
 -----
 

@@ -92,6 +92,18 @@ class TestUtils(TestCase):
             """)
         self.assertEqual(global_vars(view), {"FOO", "BAR"})
 
+    def test_global_vars_indented(self):
+        view = yield from self.write_makefile("""
+            ifneq (,$(shell command -v python3.8 2> /dev/null))
+                PYTHON=python3.8
+            else
+                PYTHON=python3
+            endif
+
+            FOO=3
+            """)
+        self.assertEqual(global_vars(view), {"PYTHON", "FOO"})
+
     def test_phony_names(self):
         view = yield from self.write_makefile("""
             .PHONY: hello1
