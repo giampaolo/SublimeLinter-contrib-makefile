@@ -101,6 +101,18 @@ test:
     pytest .<SPACE><SPACE><SPACE>
 ```
 
+#### Unnecessary empty lines at EOF
+
+E.g.:
+
+```makefile
+test:
+    pytest .
+
+
+
+```
+
 Motivations
 -----------
 

@@ -212,10 +212,28 @@ class TestParser(TestCase):
             d["message"], "a target with the same name already exists"
         )
 
-    def test_traling_spaces(self):
-        view = yield from self.write_makefile("""test:\techo 1 """)
+    def test_trailing_spaces(self):
+        view = yield from self.write_makefile("test:\techo 1 ")
         p = Parser(view)
         p.run()
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])
         self.assertEqual(d["message"], "trailing spaces")
+
+    def test_empty_lines_at_eof(self):
+        view = yield from self.write_makefile("""
+            test:
+            \techo 1
+
+
+            """)
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual(len(p.matches), 2)
+        self.assertEqual(
+            dict(p.matches[0])["message"], "unnecessary empty line at EOF"
+        )
+        self.assertEqual(
+            dict(p.matches[1])["message"], "unnecessary empty line at EOF"
+        )

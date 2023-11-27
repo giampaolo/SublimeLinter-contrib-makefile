@@ -93,20 +93,25 @@ def readlines(view):
 
 
 class Parser:
+    __slots__ = ("view", "matches", "text", "lines")
+
     def __init__(self, view):
         self.view = view
         self.matches = []
         self.text = None
+        self.lines = None
 
     def run(self):
         if self.view.match_selector(0, "source.makefile"):
             self.text = self.view.substr(sublime.Region(0, self.view.size()))
+            self.lines = self.text.splitlines()
             self.find_undefined_vars()
             self.find_undefined_target_calls()
             self.find_spaces()
             self.find_missing_phony()
             self.find_duplicate_targets()
             self.find_trailing_spaces()
+            self.find_empty_lines_at_eof()
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -198,12 +203,24 @@ class Parser:
             collected.add(name)
 
     def find_trailing_spaces(self):
-        for lineno, line in enumerate(self.text.splitlines(), start=0):
+        for lineno, line in enumerate(self.lines):
             if line.endswith(" "):
                 start = len(line.rstrip(" "))
                 end = len(line)
                 pos = lineno, start, end
                 self.add(pos, "trailing spaces")
+
+    def find_empty_lines_at_eof(self):
+        blanks = 0
+        for line in self.lines[::-1]:
+            if not line.strip():
+                blanks += 1
+            else:
+                break
+        if blanks:
+            for lineno in range(len(self.lines), len(self.lines) + blanks):
+                pos = lineno - 2, 1, 1
+                self.add(pos, "unnecessary empty line at EOF")
 
 
 class Makefile(Linter):
