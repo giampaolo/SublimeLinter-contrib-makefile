@@ -87,11 +87,6 @@ def region_position(view, region):
     return (x, y, z)
 
 
-def readlines(view):
-    region = sublime.Region(0, view.size())
-    return [view.substr(x) for x in view.lines(region)]
-
-
 class Parser:
     __slots__ = ("view", "matches", "text", "lines")
 
@@ -148,7 +143,7 @@ class Parser:
             ${MAKE} bar
         """
         fnames = target_names(self.view)
-        for lineno, line in enumerate(readlines(self.view)):
+        for lineno, line in enumerate(self.lines):
             m = re.match(REGEX_TARGET_CALL, line)
             if m:
                 target_name = m.group(1)
@@ -160,7 +155,7 @@ class Parser:
     def find_spaces(self):
         """Targets body which are indented with spaces instead of tabs.
         This is considered a syntax error and make will crash."""
-        for idx, line in enumerate(readlines(self.view)):
+        for idx, line in enumerate(self.lines):
             if line.startswith(" "):
                 leading_spaces = len(line) - len(line.lstrip())
                 pos = idx, 0, leading_spaces

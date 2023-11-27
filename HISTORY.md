@@ -4,6 +4,7 @@ https://github.com/giampaolo/SublimeLinter-contrib-makefile/issues/)*
 0.1.2 (unreleased)
 ------------------
 
+* readlines() algorithm is faster
 * #3: recognize unnecessary empty lines at EOF.
 * #2: recognize trailing spaces at the end of each line.
 * #1: constants were not recognized if start with a tab as in:
