@@ -1,8 +1,8 @@
 *(issue tracker at:
 https://github.com/giampaolo/SublimeLinter-contrib-makefile/issues/)*
 
-0.1.2 (unreleased)
-------------------
+0.1.2
+-----
 
 * readlines() algorithm is faster
 * #3: recognize unnecessary empty lines at EOF.
