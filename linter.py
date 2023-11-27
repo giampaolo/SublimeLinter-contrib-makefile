@@ -55,7 +55,7 @@ REGEX_TARGET_CALL = re.compile(
 REGEX_PHONY_NAMES = r"\.PHONY:\s*([^\n]+)"
 
 
-def global_vars(view):
+def global_var_names(view):
     # the `VARIABLE`s declared in the global namespace
     regions = view.find_by_selector("variable.other.makefile")
     # strip() of tabs and/or spaces is necessary in case VAR is
@@ -126,7 +126,7 @@ class Parser:
             echo $(FOO)
         """
         view = self.view
-        gvars = global_vars(view)
+        gvars = global_var_names(view)
         for region in referenced_vars(view):
             name = view.substr(region)
             if name not in gvars and name not in SPECIAL_VARS:

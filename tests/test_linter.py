@@ -13,7 +13,7 @@ sys.path.append(ROOT)
 
 from linter import Parser  # noqa
 from linter import target_names  # noqa
-from linter import global_vars  # noqa
+from linter import global_var_names  # noqa
 from linter import phony_names  # noqa
 from linter import referenced_vars  # noqa
 
@@ -85,14 +85,14 @@ class TestUtils(TestCase):
             {"hello1", "hello_1", "_hello1", "_hello-1", "1hello"},
         )
 
-    def test_global_vars(self):
+    def test_global_var_names(self):
         view = yield from self.write_makefile("""
             FOO = 1
             BAR = 1
             """)
-        self.assertEqual(global_vars(view), {"FOO", "BAR"})
+        self.assertEqual(global_var_names(view), {"FOO", "BAR"})
 
-    def test_global_vars_indented(self):
+    def test_global_var_names_indented(self):
         view = yield from self.write_makefile("""
             ifneq (,$(shell command -v python3.8 2> /dev/null))
                 PYTHON=python3.8
@@ -102,7 +102,7 @@ class TestUtils(TestCase):
 
             FOO=3
             """)
-        self.assertEqual(global_vars(view), {"PYTHON", "FOO"})
+        self.assertEqual(global_var_names(view), {"PYTHON", "FOO"})
 
     def test_phony_names(self):
         view = yield from self.write_makefile("""
