@@ -64,7 +64,9 @@ def global_var_names(view):
 
 
 def target_names(view):
-    # the function / target names
+    # the function / target names, e.g. "test":
+    # test:
+    #      echo "hello"
     regions = view.find_by_selector("entity.name.function")
     return set([view.substr(x) for x in regions if view.substr(x) != ".PHONY"])
 
@@ -97,16 +99,21 @@ class Parser:
         self.lines = None
 
     def run(self):
-        if self.view.match_selector(0, "source.makefile"):
-            self.text = self.view.substr(sublime.Region(0, self.view.size()))
-            self.lines = self.text.splitlines()
-            self.find_undefined_vars()
-            self.find_undefined_target_calls()
-            self.find_spaces()
-            self.find_missing_phony()
-            self.find_duplicate_targets()
-            self.find_trailing_spaces()
-            self.find_empty_lines_at_eof()
+        if not self.view.match_selector(0, "source.makefile"):
+            return []
+        self.text = self.view.substr(sublime.Region(0, self.view.size()))
+        self.lines = self.text.splitlines()
+        target_names_ = target_names(self.view)
+
+        for lineno, line in enumerate(self.lines):
+            self.find_undefined_target_calls(line, lineno, target_names_)
+            self.find_leading_spaces(line, lineno)
+            self.find_trailing_spaces(line, lineno)
+        self.find_undefined_vars()
+        self.find_missing_phony()
+        self.find_duplicate_targets()
+        self.find_empty_lines_at_eof()
+
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -135,31 +142,20 @@ class Parser:
                 pos = region_position(view, region)
                 self.add(pos, "undefined name `%s`" % name)
 
-    def find_undefined_target_calls(self):
+    def find_undefined_target_calls(self, line, lineno, target_names_):
         """All undefined target (function) calls, e.g., `bar` does not
         exist:
 
         test:
             ${MAKE} bar
         """
-        fnames = target_names(self.view)
-        for lineno, line in enumerate(self.lines):
-            m = re.match(REGEX_TARGET_CALL, line)
-            if m:
-                target_name = m.group(1)
-                if target_name not in fnames:
-                    start, end = m.span(1)
-                    pos = lineno, start, end
-                    self.add(pos, "undefined target `%s`" % target_name)
-
-    def find_spaces(self):
-        """Targets body which are indented with spaces instead of tabs.
-        This is considered a syntax error and make will crash."""
-        for idx, line in enumerate(self.lines):
-            if line.startswith(" "):
-                leading_spaces = len(line) - len(line.lstrip())
-                pos = idx, 0, leading_spaces
-                self.add(pos, "line should start with tab, not space")
+        m = re.match(REGEX_TARGET_CALL, line)
+        if m:
+            target_name = m.group(1)
+            if target_name not in target_names_:
+                start, end = m.span(1)
+                pos = lineno, start, end
+                self.add(pos, "undefined target `%s`" % target_name)
 
     def find_missing_phony(self):
         """E.g., something like this + there's a directory 'tests' in
@@ -197,15 +193,24 @@ class Parser:
                 self.add(pos, "a target with the same name already exists")
             collected.add(name)
 
-    def find_trailing_spaces(self):
-        for lineno, line in enumerate(self.lines):
-            if line.endswith(" "):
-                start = len(line.rstrip(" "))
-                end = len(line)
-                pos = lineno, start, end
-                self.add(pos, "trailing spaces")
+    def find_leading_spaces(self, line, lineno):
+        """A target body which is indented with spaces instead of tabs.
+        This is considered a syntax error and make will crash."""
+        if line.startswith(" "):
+            leading_spaces = len(line) - len(line.lstrip())
+            pos = lineno, 0, leading_spaces
+            self.add(pos, "line should start with tab, not space")
+
+    def find_trailing_spaces(self, line, lineno):
+        """Trailing spaces at the EOL (style)."""
+        if line.endswith(" "):
+            start = len(line.rstrip(" "))
+            end = len(line)
+            pos = lineno, start, end
+            self.add(pos, "trailing spaces")
 
     def find_empty_lines_at_eof(self):
+        """Empty lines (\n) at the EOF (style)."""
         blanks = 0
         for line in self.lines[::-1]:
             if not line.strip():
