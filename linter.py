@@ -106,6 +106,7 @@ class Parser:
             self.find_spaces()
             self.find_missing_phony()
             self.find_duplicate_targets()
+            self.find_trailing_spaces()
         return self.matches
 
     def add(self, pos, msg, type="error"):
@@ -195,6 +196,14 @@ class Parser:
                 pos = region_position(view, region)
                 self.add(pos, "a target with the same name already exists")
             collected.add(name)
+
+    def find_trailing_spaces(self):
+        for lineno, line in enumerate(self.text.splitlines(), start=0):
+            if line.endswith(" "):
+                start = len(line.rstrip(" "))
+                end = len(line)
+                pos = lineno, start, end
+                self.add(pos, "trailing spaces")
 
 
 class Makefile(Linter):

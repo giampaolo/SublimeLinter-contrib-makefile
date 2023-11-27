@@ -92,6 +92,15 @@ test:
     pytest .
 ```
 
+#### Trailing spaces
+
+Any trailing space at the end of the line, e.g.:
+
+```makefile
+test:
+    pytest .<SPACE><SPACE><SPACE>
+```
+
 Motivations
 -----------
 
@@ -100,23 +109,7 @@ Motivations
 As stated in https://github.com/SublimeLinter/package_control_channel/pull/134,
 the motivation which led me to write this plugin is because the only Makefile
 linter I found is https://github.com/mrtazz/checkmake, which provides a quite
-limited set of rules:
-
-```
-$ go run github.com/mrtazz/checkmake/cmd/checkmake@latest --list-rules
-
-        NAME                   DESCRIPTION
-
-  maxbodylength       Target bodies should be kept
-                      simple and short.
-  minphony            Minimum required phony targets
-                      must be present
-  phonydeclared       Every target without a body
-                      needs to be marked PHONY
-  timestampexpanded   timestamp variables should be
-                      simply expanded
-```
-
+limited set of rules.
 I wanted a linter which was able to identify at least undefined variable names,
 undefined target names, and the use of spaces instead of tabs. I found none so
 I wrote my own.

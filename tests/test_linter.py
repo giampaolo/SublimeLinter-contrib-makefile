@@ -211,3 +211,11 @@ class TestParser(TestCase):
         self.assertEqual(
             d["message"], "a target with the same name already exists"
         )
+
+    def test_traling_spaces(self):
+        view = yield from self.write_makefile("""test:\techo 1 """)
+        p = Parser(view)
+        p.run()
+        self.assertEqual(len(p.matches), 1)
+        d = dict(p.matches[0])
+        self.assertEqual(d["message"], "trailing spaces")
