@@ -146,6 +146,20 @@ class TestParser(TestCase):
         self.assertEqual(d["line"], 2)
         self.assertEqual(d["col"], 8)
 
+    def test_implicit_rule_vars_are_not_undefined(self):
+        # CC and RM are defined by make itself.
+        view = yield from self.write_makefile("""
+            prog: prog.o
+            \t$(CC) $(CFLAGS) -o $@ $^
+
+            clean:
+            \t$(RM) prog
+            """)
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual(len(p.matches), 0)
+
     def test_undefined_fun_call(self):
         view = yield from self.write_makefile("""
             fix-all:
