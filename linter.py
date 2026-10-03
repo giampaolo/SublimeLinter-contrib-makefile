@@ -54,6 +54,9 @@ REGEX_TARGET_CALL = re.compile(
 
 REGEX_PHONY_NAMES = r"\.PHONY:\s*([^\n]+)"
 
+# A rule line, e.g. `test: build` (but not an assignment such as `FOO := 1`).
+REGEX_RULE = re.compile(r"^[^\s#][^=]*?:(?!=)")
+
 
 def global_var_names(view):
     # the `VARIABLE`s declared in the global namespace
@@ -105,10 +108,17 @@ class Parser:
         self.lines = self.text.splitlines()
         target_names_ = target_names(self.view)
 
+        in_recipe = False
+        continued = False
         for lineno, line in enumerate(self.lines):
             self.find_undefined_target_calls(line, lineno, target_names_)
-            self.find_leading_spaces(line, lineno)
+            if in_recipe and not continued:
+                self.find_leading_spaces(line, lineno)
             self.find_trailing_spaces(line, lineno)
+            if not continued and line.strip() and not line.startswith(("\t", "#")):
+                # A rule line starts a recipe; any other line ends it.
+                in_recipe = bool(REGEX_RULE.match(line))
+            continued = line.endswith("\\")
         self.find_undefined_vars()
         self.find_missing_phony()
         self.find_duplicate_targets()
@@ -195,7 +205,10 @@ class Parser:
 
     def find_leading_spaces(self, line, lineno):
         """A target body which is indented with spaces instead of tabs.
-        This is considered a syntax error and make will crash."""
+        This is considered a syntax error and make will crash.
+
+        Only called for lines inside a recipe: spaces are fine in
+        continuation lines and in indented variables / conditionals."""
         if line.startswith(" "):
             leading_spaces = len(line) - len(line.lstrip())
             pos = lineno, 0, leading_spaces
