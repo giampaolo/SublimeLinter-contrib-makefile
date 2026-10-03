@@ -196,6 +196,42 @@ class TestParser(TestCase):
         d = dict(p.matches[0])
         self.assertEqual(d["message"], "line should start with tab, not space")
 
+    def test_space_in_continuation_line(self):
+        # Spaces are fine outside of a recipe and in continuation lines.
+        view = yield from self.write_makefile("""
+            SRCS = a.c \\
+                b.c \\
+                c.c
+
+            ifeq (1,1)
+              FOO = 1
+            endif
+
+            all: $(SRCS)
+            \techo one \\
+                two
+            """)
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual(len(p.matches), 0)
+
+    def test_space_after_recipe_continuation(self):
+        # The line after the continued one is a new recipe line again.
+        view = yield from self.write_makefile("""
+            all:
+            \techo one \\
+                two
+                echo 3
+            """)
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual(len(p.matches), 1)
+        d = dict(p.matches[0])
+        self.assertEqual(d["message"], "line should start with tab, not space")
+        self.assertEqual(d["line"], 4)
+
     def test_phony(self):
         os.mkdir(os.path.join(os.path.dirname(TEST_FILE), "dirname"))
         view = yield from self.write_makefile("""
