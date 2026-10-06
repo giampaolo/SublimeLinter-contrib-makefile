@@ -1,4 +1,6 @@
 [![tests](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml/badge.svg)](https://github.com/giampaolo/SublimeLinter-makefile/actions/workflows/tests.yml)
+[![package control](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fpackagecontrol.io%2Fpackages%2FSublimeLinter-contrib-makefile.json&query=%24.versions%5B0%5D.version&label=package%20control)](https://packagecontrol.io/packages/SublimeLinter-contrib-makefile)
+[![downloads](https://img.shields.io/packagecontrol/dt/SublimeLinter-contrib-makefile)](https://packagecontrol.io/packages/SublimeLinter-contrib-makefile)
 
 About
 -----
