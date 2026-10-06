@@ -232,6 +232,36 @@ class TestParser(TestCase):
         self.assertEqual(d["message"], "line should start with tab, not space")
         self.assertEqual(d["line"], 4)
 
+    def test_space_multiple_lines(self):
+        view = yield from self.write_makefile("""
+            fix-all:
+                echo 1
+                echo 2
+            """)
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual([dict(m)["line"] for m in p.matches], [2, 3])
+
+    def test_space_in_recipe_conditional(self):
+        view = yield from self.write_makefile("""
+            test:
+            ifeq (1,1)
+                echo 1
+            endif
+
+            all:
+            \techo 1
+
+            ifeq (1,1)
+              FOO = 1
+            endif
+            """)
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual([dict(m)["line"] for m in p.matches], [3])
+
     def test_phony(self):
         os.mkdir(os.path.join(os.path.dirname(TEST_FILE), "dirname"))
         view = yield from self.write_makefile("""
@@ -258,9 +288,7 @@ class TestParser(TestCase):
         p.run()
         self.assertEqual(len(p.matches), 1)
         d = dict(p.matches[0])
-        self.assertEqual(
-            d["message"], "a target named `test` already exists"
-        )
+        self.assertEqual(d["message"], "a target named `test` already exists")
 
     def test_trailing_spaces(self):
         view = yield from self.write_makefile("test:\techo 1 ")

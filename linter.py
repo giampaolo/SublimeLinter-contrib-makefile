@@ -95,6 +95,12 @@ REGEX_PHONY_NAMES = r"\.PHONY:\s*([^\n]+)"
 # A rule line, e.g. `test: build` (but not an assignment such as `FOO := 1`).
 REGEX_RULE = re.compile(r"^[^\s#][^=]*?:(?!=)")
 
+REGEX_CONDITIONAL = re.compile(r"^(ifeq|ifneq|ifdef|ifndef|else|endif)(\s|$)")
+
+REGEX_ASSIGNMENT = re.compile(
+    r"^\s*(?:(?:export|override)\s+)*[^\s:#=]+\s*(?::{1,3}|[?+!])?="
+)
+
 
 def global_var_names(view):
     # the `VARIABLE`s declared in the global namespace
@@ -150,11 +156,19 @@ class Parser:
         continued = False
         for lineno, line in enumerate(self.lines):
             self.find_undefined_target_calls(line, lineno, target_names_)
-            if in_recipe and not continued:
+            if (
+                in_recipe
+                and not continued
+                and not REGEX_ASSIGNMENT.match(line)
+            ):
                 self.find_leading_spaces(line, lineno)
             self.find_trailing_spaces(line, lineno)
-            if not continued and line.strip() and not line.startswith(("\t", "#")):
-                # A rule line starts a recipe; any other line ends it.
+            if (
+                not continued
+                and line.strip()
+                and not line.startswith(("\t", " ", "#"))
+                and not REGEX_CONDITIONAL.match(line)
+            ):
                 in_recipe = bool(REGEX_RULE.match(line))
             continued = line.endswith("\\")
         self.find_undefined_vars()
