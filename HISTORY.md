@@ -1,10 +1,13 @@
 *(issue tracker at:
 https://github.com/giampaolo/SublimeLinter-contrib-makefile/issues/)*
 
-0.1.3 (unreleased)
-------------------
+0.1.3
+-----
 
 * `.PHONY` was erroneously considered a target name.
+* #7: only report leading spaces inside a recipe, not in continuation lines.
+* #8: don't report make's implicit-rule variables (CC, RM, CFLAGS, ...) as
+  undefined.
 
 0.1.2
 -----

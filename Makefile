@@ -12,7 +12,7 @@ black:  ## Run black linter.
 fix-black:  ## Fix black warnings.
 	git ls-files '*.py' | xargs $(PYTHON) -m black --config=pyproject.toml
 
-git-tag-release:  ## Git-tag a new release.
+release:  ## Create a new release. Package Control will pick up the new git tag by itself.
 	$(eval VER := $(shell grep -oP '^__version__ = "\K[^"]+' linter.py))
 	git tag -a $(VER) -m `git rev-list HEAD --count`:`git rev-parse --short HEAD`
 	git push --follow-tags
