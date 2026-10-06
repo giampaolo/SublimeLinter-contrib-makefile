@@ -275,6 +275,19 @@ class TestParser(TestCase):
         d = dict(p.matches[0])
         self.assertEqual(d["message"], "missing .PHONY declaration")
 
+    def test_unsaved_view(self):
+        view = sublime.active_window().new_file()
+        self.addCleanup(self.await_close_view, view)
+        view.assign_syntax("Packages/Makefile/Makefile.sublime-syntax")
+        view.run_command("append", {"characters": "test:\n    echo 1\n"})
+        yield lambda: view.match_selector(0, "source.makefile")
+
+        p = Parser(view)
+        p.run()
+        self.assertEqual(len(p.matches), 1)
+        d = dict(p.matches[0])
+        self.assertEqual(d["message"], "line should start with tab, not space")
+
     def test_duplicated_target(self):
         view = yield from self.write_makefile("""
             test:

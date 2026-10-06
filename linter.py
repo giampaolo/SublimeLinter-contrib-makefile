@@ -228,6 +228,8 @@ class Parser:
             pytest
         """
         view = self.view
+        if view.file_name() is None:
+            return
         fnames = set(os.listdir(os.path.dirname(view.file_name())))
         phonys = phony_names(self.text)
         for region in view.find_by_selector("entity.name.function"):

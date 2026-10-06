@@ -8,6 +8,7 @@ https://github.com/giampaolo/SublimeLinter-contrib-makefile/issues/)*
 * #7: only report leading spaces inside a recipe, not in continuation lines.
 * #8: don't report make's implicit-rule variables (CC, RM, CFLAGS, ...) as
   undefined.
+* unsaved (new) buffers were not linted.
 
 0.1.2
 -----
